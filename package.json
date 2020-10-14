@@ -1,0 +1,13 @@
+{
+  "name": "linkRename",
+  "version": "1.0.0",
+  "description": "An app to rename recursively a link in selected files by extension",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Alain Bourgeois",
+  "license": "MIT",
+  "repository": ""
+}
