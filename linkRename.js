@@ -118,7 +118,7 @@ switch(command) {
             const name = filename.split(pathToServer)[1]
             const test = name.split('/')
             n += 1
-            if (param === '--file') console.log('   ' + name.split(title)[1])
+            if (param === '--file') console.log('   ' + name.split(test[1])[1])
             if (test.length > 1) {
               if (title !== test[1]) {
                 console.log('  ' + n + ' ' + test[1])
@@ -172,6 +172,6 @@ function fromDir(startPath,filter,callback) {
 
 // only rename server links
 function rename (content, source, target) {
-  const newContent = content.replace(new RegExp(`<https://(.*?).${source}(.*?)>` , 'g'), `<https://$1.${target}$2>`)
+  const newContent = content.replace(new RegExp(`<https://(.*?).${source}(.*?)>`, 'g'), `<https://$1.${target}$2>`)
   return newContent
 }
