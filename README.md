@@ -1,11 +1,13 @@
-# linkRename
-Rename recursively solid server links from `solid.community` to `solid.community.net`
+# linkRename recursively
+`Rename or test rename` recursively from a podsFolder all solid server links from `solid.community` to `solid.community.net`
 
 Files are filtered on extension : `.acl`, `.meta`, `.ttl`
 
-Selected links are enclosed in `<>` and begin with `https://`.
+Selected files have a content including a `solid.community` string.
 
-In each selected link the replacement occur from the end of the `server` part.
+Original selected files are backed up to `/bak.solid.community`.
+
+Only links enclosed in `<>` and beginning with `https://` are renamed.
 
 ## Usage
 From the folder containing `linkRename.js`
