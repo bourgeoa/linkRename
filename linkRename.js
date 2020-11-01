@@ -1,10 +1,23 @@
 #!/usr/bin/env node
 
-const path = require('path'), fs=require('fs')
+const path = require('path')
+const fs = require('fs')
+const shell = require('child_process').execSync
+const { COPYFILE_EXCL } = fs.constants
 
+/**
+ * to be adjusted
+ * - rename source to target
+ * - backup original selected files
+ */
 const source = 'solid.community'
 const target = 'solidcommunity.net'
+const backup = '/bak.solid.community'
 const exts = ['acl', 'meta', 'ttl']
+
+/**
+ * module commands and params
+ */
 const commands = ['run', 'test', 'help']
 const params = ['--no', '--folder', '--file']
 
@@ -91,6 +104,7 @@ switch(command) {
     const pathToServer = args[3]
     let count = [0, 0, 0]
     let title = ''
+    let n = 0
     console.log('on folder : ' + pathToServer)
 
     // rename for each extension
@@ -100,20 +114,31 @@ switch(command) {
         const content = fs.readFileSync(filename).toString()
         const patt = new RegExp(source)
         if (patt.test(content)) {
-          const newContent = rename(content, source, target) //content.replace(new RegExp(source, 'g'), target)
           if (param !== '--no') {
             const name = filename.split(pathToServer)[1]
             const test = name.split('/')
+            n += 1
+            if (param === '--file') console.log('   ' + name.split(title)[1])
             if (test.length > 1) {
               if (title !== test[1]) {
+                console.log('  ' + n + ' ' + test[1])
+                n = 0
                 title = test[1]
-                console.log('  ' + title)
               }
             }
-            if (param === '--file') console.log('   ' + name.split(title)[1])
           }
           count[i] += 1
-          if (command === 'run') fs.writeFileSync(filename, newContent)
+
+          // backup before run and keep original (do not replace if exists)
+          const folder = filename.substring(0, filename.lastIndexOf('/') + 1)
+          shell(`mkdir -p "${backup}${folder}"`)
+          fs.copyFile(filename, backup + filename, COPYFILE_EXCL, (err) => { if (err) {} } )
+
+          // update file
+          if (command === 'run') {
+            const newContent = rename(content, source, target) //content.replace(new RegExp(source, 'g'), target)
+          fs.writeFileSync(filename, newContent)
+          }
         }
       })
     }
@@ -138,30 +163,15 @@ function fromDir(startPath,filter,callback) {
   for (var i=0;i<files.length;i++) {
       var filename=path.join(startPath,files[i])
       var stat = fs.lstatSync(filename)
-      if (stat.isDirectory()) { // && !filename.startsWith(target)) {
+      if (stat.isDirectory()) {
           fromDir(filename,filter,callback) //recurse
       }
       else if (filter.test(filename)) callback(filename)
   }
 }
 
-// only replace server links
+// only rename server links
 function rename (content, source, target) {
-  sourceArray = content.split('<')
-  for (const i in sourceArray) {
-    const link = sourceArray[i].split('>')
-    
-    // this is may be too strict and could be tested against
-    // link[0] = link[0].replace(new RegExp(source, 'g'), target)
-    
-    if (link[0].startsWith('https://')) {
-      let linkSplit = link[0].split('/')
-      let podName = linkSplit[2]
-      linkSplit[2] = podName.replace(new RegExp(`${source}$`), target)
-      link[0] = linkSplit.join('/')
-    }
-    sourceArray[i] = link.join('>')
-  }
-  const newContent = sourceArray.join('<')
+  const newContent = content.replace(new RegExp(`<https://(.*?).${source}(.*?)>` , 'g'), `<https://$1.${target}$2>`)
   return newContent
 }
